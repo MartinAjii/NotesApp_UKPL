@@ -45,26 +45,34 @@ class _RegisterPageState extends State<RegisterPage> {
       isLoading = true;
     });
 
-    final result = await authService.register(
-      usernameController.text.trim(),
-      passwordController.text,
-    );
+    try {
+      final result = await authService.register(
+        usernameController.text.trim(),
+        passwordController.text,
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      isLoading = false;
-    });
-
-    if (result['success'] == true) {
-      showMessage(result['message']);
-
-      Navigator.pop(context);
-    } else {
+      if (result['success'] == true) {
+        showMessage(result['message']);
+        Navigator.pop(context);
+      } else {
+        showMessage(
+          result['message'],
+          isError: true,
+        );
+      }
+    } catch (e) {
       showMessage(
-        result['message'],
+        'Tidak dapat terhubung ke server',
         isError: true,
       );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 

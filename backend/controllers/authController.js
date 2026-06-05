@@ -22,6 +22,15 @@ exports.register = async(req,res)=>{
             });
         }
 
+        const existingUser = await User.findByUsername(username);
+
+        if(existingUser){
+            return res.status(400).json({
+                success:false,
+                message:"Username sudah digunakan"
+            });
+        }
+
         const hash = await bcrypt.hash(password,10);
 
         await User.create(username,hash);
