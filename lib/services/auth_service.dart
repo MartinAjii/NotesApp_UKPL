@@ -40,7 +40,7 @@ class AuthService {
     return false;
   }
 
-  Future<bool> register(
+  Future<Map<String, dynamic>> register(
       String username,
       String password) async {
 
@@ -55,7 +55,7 @@ class AuthService {
       }),
     );
 
-    return response.statusCode == 200;
+    return jsonDecode(response.body);
   }
 
   Future<String?> getToken() async {

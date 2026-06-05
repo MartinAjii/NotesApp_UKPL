@@ -8,6 +8,20 @@ exports.register = async(req,res)=>{
 
         const {username,password} = req.body;
 
+        if(username.length < 3){
+            return res.status(400).json({
+                success:false,
+                message:"Username minimal 3 karakter"
+            });
+        }
+
+        if(password.length < 8){
+            return res.status(400).json({
+                success:false,
+                message:"Password minimal 8 karakter"
+            });
+        }
+
         const hash = await bcrypt.hash(password,10);
 
         await User.create(username,hash);

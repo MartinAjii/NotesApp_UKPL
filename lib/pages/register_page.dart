@@ -32,8 +32,12 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> handleRegister() async {
-    if (usernameController.text.trim().isEmpty || passwordController.text.isEmpty) {
-      showMessage('Isi username dan password terlebih dahulu', isError: true);
+    if (usernameController.text.trim().isEmpty ||
+        passwordController.text.isEmpty) {
+      showMessage(
+        'Isi username dan password terlebih dahulu',
+        isError: true,
+      );
       return;
     }
 
@@ -41,7 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
       isLoading = true;
     });
 
-    final success = await authService.register(
+    final result = await authService.register(
       usernameController.text.trim(),
       passwordController.text,
     );
@@ -52,11 +56,15 @@ class _RegisterPageState extends State<RegisterPage> {
       isLoading = false;
     });
 
-    if (success) {
-      showMessage('Pendaftaran berhasil. Silakan login.');
+    if (result['success'] == true) {
+      showMessage(result['message']);
+
       Navigator.pop(context);
     } else {
-      showMessage('Pendaftaran gagal. Silakan coba lagi.', isError: true);
+      showMessage(
+        result['message'],
+        isError: true,
+      );
     }
   }
 
