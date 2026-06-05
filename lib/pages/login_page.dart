@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../services/auth_service.dart';
 import 'notes_page.dart';
@@ -8,111 +8,154 @@ class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState()
-      => _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState
-    extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> {
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+  final authService = AuthService();
+  bool isLoading = false;
 
-  final usernameController =
-      TextEditingController();
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
-  final passwordController =
-      TextEditingController();
+  void showMessage(String text, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        backgroundColor: isError ? Colors.redAccent : Colors.indigo,
+      ),
+    );
+  }
 
-  final authService =
-      AuthService();
+  Future<void> handleLogin() async {
+    if (usernameController.text.trim().isEmpty || passwordController.text.isEmpty) {
+      showMessage('Isi username dan password terlebih dahulu', isError: true);
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final success = await authService.login(
+        usernameController.text.trim(),
+        passwordController.text,
+      );
+
+      if (success) {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const NotesPage()),
+        );
+      } else {
+        if (!mounted) return;
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Login gagal. Periksa kembali username dan password.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Terjadi kesalahan saat login. Coba lagi nanti.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login"),
-      ),
-
-      body: Padding(
-        padding:
-        const EdgeInsets.all(16),
-
-        child: Column(
-          children: [
-
-            TextField(
-              controller:
-              usernameController,
-              decoration:
-              const InputDecoration(
-                labelText:
-                "Username",
-              ),
-            ),
-
-            TextField(
-              controller:
-              passwordController,
-              obscureText: true,
-              decoration:
-              const InputDecoration(
-                labelText:
-                "Password",
-              ),
-            ),
-
-            const SizedBox(
-                height: 20),
-
-            ElevatedButton(
-              onPressed: () async {
-
-              try {
-
-                print("Tombol login ditekan");
-
-                bool success =
-                    await authService.login(
-                  usernameController.text,
-                  passwordController.text,
-                );
-
-                print("Login result: $success");
-
-                if (success) {
-
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NotesPage(),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              elevation: 8,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Selamat datang kembali',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
-                  );
-                }
-
-              } catch (e) {
-
-                print("ERROR LOGIN:");
-                print(e);
-              }
-            },
-              child:
-              const Text("Login"),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Masuk untuk mengelola catatanmu dengan mudah.',
+                      style: TextStyle(fontSize: 16, color: Colors.black54),
+                    ),
+                    const SizedBox(height: 24),
+                    TextField(
+                      controller: usernameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Username',
+                        prefixIcon: Icon(Icons.person),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: Icon(Icons.lock),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: isLoading ? null : handleLogin,
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Text('Login'),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const RegisterPage()),
+                        );
+                      },
+                      child: const Text('Belum punya akun? Daftar di sini'),
+                    ),
+                  ],
+                ),
+              ),
             ),
-
-            TextButton(
-              onPressed: () {
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_)
-                    => const RegisterPage(),
-                  ),
-                );
-              },
-              child:
-              const Text("Register"),
-            )
-          ],
+          ),
         ),
       ),
     );
