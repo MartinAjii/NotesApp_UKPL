@@ -1,6 +1,6 @@
 const Note = require("../models/Note");
 
-exports.getNotes = async(req,res)=>{
+exports.getNotes = async (req, res) => {
 
     const notes = await Note.getByUser(
         req.user.id
@@ -9,39 +9,70 @@ exports.getNotes = async(req,res)=>{
     res.json(notes);
 };
 
-exports.createNote = async(req,res)=>{
+exports.createNote = async (req, res) => {
+
+    const { title, content } = req.body;
+
+    if (!title || title.trim() === "") {
+
+        return res.status(400).json({
+            success: false,
+            message: "Title wajib diisi"
+        });
+    }
 
     await Note.create(
-        req.body.title,
-        req.body.content,
+        title,
+        content,
         req.user.id
     );
 
-    res.json({
-        success:true
+    res.status(201).json({
+        success: true,
+        message: "Note berhasil dibuat"
     });
 };
 
-exports.updateNote = async(req,res)=>{
+exports.updateNote = async (req, res) => {
+
+    const { title, content } = req.body;
+
+    if (!title || title.trim() === "") {
+
+        return res.status(400).json({
+            success: false,
+            message: "Title wajib diisi"
+        });
+    }
 
     await Note.update(
         req.params.id,
-        req.body.title,
-        req.body.content
+        title,
+        content
     );
 
     res.json({
-        success:true
+        success: true,
+        message: "Note berhasil diubah"
     });
 };
 
-exports.deleteNote = async(req,res)=>{
+exports.deleteNote = async (req, res) => {
 
-    await Note.delete(
-        req.params.id
-    );
+    const noteId = req.params.id;
+
+    if (!noteId) {
+
+        return res.status(400).json({
+            success: false,
+            message: "ID tidak valid"
+        });
+    }
+
+    await Note.delete(noteId);
 
     res.json({
-        success:true
+        success: true,
+        message: "Note berhasil dihapus"
     });
 };
